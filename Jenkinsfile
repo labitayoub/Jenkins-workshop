@@ -15,69 +15,48 @@ pipeline {
         //     steps {
         //         echo 'Installing backend deps...'
         //         dir('CareFlow-BackEnd') {
-        //             sh 'npm install'
-        //         }
-        //     }
-        // }
+        pipeline {
+            agent any
 
-        stage('Install Frontend Dependencies') {
-            steps {
-                echo 'Installing frontend deps...'
-                dir('CareFlow-FrontEnd') {
-                    sh 'npm install'
+            stages {
+                stage('Checkout') {
+                    steps {
+                        echo 'Cloning repository...'
+                        checkout scm
+                    }
+                }
+
+                stage('Install') {
+                    steps {
+                        echo 'Installing dependencies...'
+                        sh 'npm ci'
+                    }
+                }
+
+                stage('Test') {
+                    steps {
+                        echo 'Running tests...'
+                        sh 'npm test || true'
+                    }
+                }
+
+                stage('Build') {
+                    steps {
+                        echo 'Building...'
+                        sh 'npm run build || true'
+                    }
+                }
+            }
+
+            post {
+                always {
+                    cleanWs()
+                }
+                success {
+                    echo 'Pipeline succeeded.'
+                }
+                failure {
+                    echo 'Pipeline failed.'
                 }
             }
         }
-
-        stage('Test') {
-            steps {
-                echo 'Running Tests...'
-                // dir('CareFlow-BackEnd') { sh 'npm test || true' }
-                // dir('CareFlow-FrontEnd') { sh 'npm test || true' }
-            }
-        }
-
-
-    //     stage('Test_0') {
-    // parallel {
-    //     stage('Backend Tests') {
-    //         steps {
-    //             echo 'Running Backend Tests...'
-    //             // dir('CareFlow-BackEnd') {
-    //             //     sh 'npm test || true'
-    //             // }
-    //         }
-    //     }
-
-//         stage('Frontend Tests') {
-//             steps {
-//                 echo 'Running Frontend Tests...'
-//                 // dir('CareFlow-FrontEnd') {
-//                 //     sh 'npm test || true'
-//                 // }
-//             }
-//         }
-//     }
-// }
-
-
-//        stage('Docker Compose Up') {
-//     steps {
-//         echo 'Starting Containers...'
-//         sh 'docker-compose -d --build'
-//     }
-// }
-
-    }
-
-    post {
-    success {
-        echo 'Build succeeded, cleaning up...'
-        // sh 'docker compose down || true'
-    }
-    failure {
-        echo 'Build failed, cleaning up...'
-        // sh 'docker compose down || true'
-    }
-}
-}
